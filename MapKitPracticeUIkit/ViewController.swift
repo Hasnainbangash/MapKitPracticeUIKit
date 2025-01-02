@@ -176,6 +176,10 @@ extension ViewController: MKLocalSearchCompleterDelegate {
                 
                 self.mapView.setRegion(region, animated: true)
                 
+                // Code for making a circle on the searh locaton
+                let searchLocation = CLLocation(latitude: location.placemark.coordinate.latitude, longitude: location.placemark.coordinate.longitude)
+                self.addRadiusCircle(location: searchLocation)
+                
             }
         }
     }
