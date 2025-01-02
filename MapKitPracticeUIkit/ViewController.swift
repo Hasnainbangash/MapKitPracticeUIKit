@@ -17,6 +17,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     
     let locationManager = CLLocationManager()
+    var currentLocation: CLLocationCoordinate2D?
+    let destination = CLLocationCoordinate2D(latitude: 40.850678, longitude: -73.945212)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,8 +35,6 @@ class ViewController: UIViewController {
         } else {
             setInitialMapLocations()
         }
-        
-        routeMap()
         
     }
     
@@ -91,10 +91,24 @@ extension ViewController: MKMapViewDelegate {
             
             //for getting just one route
             if let route = unwrappedResponse.routes.first {
+                self.mapView.removeOverlays(self.mapView.overlays)
                 //show on map
                 self.mapView.addOverlay(route.polyline)
                 //set the map area to show the route
                 self.mapView.setVisibleMapRect(route.polyline.boundingMapRect, edgePadding: UIEdgeInsets.init(top: 80.0, left: 20.0, bottom: 100.0, right: 20.0), animated: true)
+                
+                // Add annotations for source and destination
+                self.mapView.removeAnnotations(self.mapView.annotations)
+                
+                let sourcePin = MKPointAnnotation()
+                sourcePin.coordinate = pickupCoordinate
+                sourcePin.title = "Current Location"
+                
+                let destinationPin = MKPointAnnotation()
+                destinationPin.coordinate = destinationCoordinate
+                destinationPin.title = "Destination"
+                
+                self.mapView.addAnnotations([sourcePin, destinationPin])
             }
             
             //if you want to show multiple routes then you can get all routes in a loop in the following statement
@@ -103,15 +117,21 @@ extension ViewController: MKMapViewDelegate {
     }
     
     func routeMap() {
-        //create two dummy locations
-        let loc1 = CLLocationCoordinate2D.init(latitude: 51.513059, longitude: -0.091404)
-        let loc2 = CLLocationCoordinate2D.init(latitude: 51.516925, longitude: -0.089387)
-
-//        51.513059, -0.091404
-//        51.516925, -0.089387
+        
+//        //create two dummy locations
+//        let loc1 = CLLocationCoordinate2D.init(latitude: 51.513059, longitude: -0.091404)
+//        let loc2 = CLLocationCoordinate2D.init(latitude: 51.516925, longitude: -0.089387)
+//
+////        51.513059, -0.091404
+////        51.516925, -0.089387
+        
+        guard let currentLocation = self.currentLocation else {
+            print("Current location not available")
+            return
+        }
         
         //find route
-        showRouteOnMap(pickupCoordinate: loc1, destinationCoordinate: loc2)
+        showRouteOnMap(pickupCoordinate: currentLocation, destinationCoordinate: destination)
     }
     
     func addRadiusCircle(location: CLLocation){
@@ -156,6 +176,7 @@ extension ViewController: CLLocationManagerDelegate {
         guard let userLocation = locations.last else { return }
         
         locationManager.stopUpdatingLocation()
+        self.currentLocation = userLocation.coordinate
         
         let region = MKCoordinateRegion(
             center: userLocation.coordinate,
@@ -171,6 +192,8 @@ extension ViewController: CLLocationManagerDelegate {
         pin.coordinate = userLocation.coordinate
         pin.title = "Current Location"
         mapView.addAnnotation(pin)
+        
+        routeMap()
         
         addRadiusCircle(location: userLocation)
         
