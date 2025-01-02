@@ -23,6 +23,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
         
         searchBar.delegate = self
+        mapView.delegate = self
         
         setupProfileImage()
         setupLocationManager()
@@ -69,6 +70,30 @@ class ViewController: UIViewController {
     
 }
 
+// MARK: - MKMapViewDelegate
+
+extension ViewController: MKMapViewDelegate {
+    
+    func addRadiusCircle(location: CLLocation){
+        self.mapView.delegate = self
+        let circle = MKCircle(center: location.coordinate, radius: 500 as CLLocationDistance)
+        self.mapView.addOverlay(circle)
+    }
+    
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if overlay is MKCircle {
+            let circle = MKCircleRenderer(overlay: overlay)
+            circle.strokeColor = UIColor.red
+            circle.fillColor = UIColor.red.withAlphaComponent(0.1)
+            circle.lineWidth = 1
+            return circle
+        }
+        
+        return MKOverlayRenderer()
+    }
+    
+}
+
 // MARK: - CLLocationManagerDelegate
 
 extension ViewController: CLLocationManagerDelegate {
@@ -103,6 +128,9 @@ extension ViewController: CLLocationManagerDelegate {
         pin.coordinate = userLocation.coordinate
         pin.title = "Current Location"
         mapView.addAnnotation(pin)
+        
+        addRadiusCircle(location: userLocation)
+        
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
