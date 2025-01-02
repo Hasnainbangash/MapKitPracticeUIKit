@@ -91,16 +91,14 @@ extension ViewController: CLLocationManagerDelegate {
         
         let region = MKCoordinateRegion(
             center: userLocation.coordinate,
-            latitudinalMeters: 5000,  // Reduced for closer zoom
+            latitudinalMeters: 5000,
             longitudinalMeters: 5000
         )
         
         mapView.setRegion(region, animated: true)
         
-        // Remove existing annotations
         mapView.removeAnnotations(mapView.annotations)
         
-        // Add new annotation for current location
         let pin = MKPointAnnotation()
         pin.coordinate = userLocation.coordinate
         pin.title = "Current Location"
@@ -133,7 +131,6 @@ extension ViewController: MKLocalSearchCompleterDelegate {
             
             guard let response = response else { return }
             
-            // Remove existing annotations from the map
             self.mapView.removeAnnotations(self.mapView.annotations)
             
             if let location = response.mapItems.last {
